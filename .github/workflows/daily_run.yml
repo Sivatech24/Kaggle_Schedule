@@ -3,7 +3,7 @@ name: Trigger Kaggle Notebook Daily
 on:
   schedule:
     - cron: '30 2 * * *'   # Runs daily at 02:30 UTC (08:00 IST)
-  workflow_dispatch:       # Allows manual trigger
+  workflow_dispatch:
 
 jobs:
   run-kaggle:
@@ -29,19 +29,24 @@ jobs:
         run: |
           mkdir -p ~/.kaggle
           cat > ~/.kaggle/kaggle.json <<EOF
-          {"username":"${KAGGLE_USERNAME}","key":"${KAGGLE_KEY}"}
-          EOF
+{"username":"${KAGGLE_USERNAME}","key":"${KAGGLE_KEY}"}
+EOF
           chmod 600 ~/.kaggle/kaggle.json
 
       - name: Show kernel folder (for debug)
-        run: ls -la ./kaggle_kernel || true
-
-      - name: Push kernel (create new version)
-        # Ensure your kernel files (kernel-metadata.json + .ipynb) live in ./kaggle_kernel
         run: |
+          echo "Listing kaggle_kernel:"
+          ls -la ./kaggle_kernel || true
+          echo "kernel-metadata.json contents:"
+          cat ./kaggle_kernel/kernel-metadata.json || true
+
+      - name: Push kernel (create new version) and show output
+        run: |
+          set -x
           KERNEL_DIR=./kaggle_kernel
           if [ ! -d "$KERNEL_DIR" ]; then
             echo "Kernel directory $KERNEL_DIR not found. Create it and add kernel-metadata.json + your .ipynb"
             exit 1
           fi
-          kaggle kernels push -p "$KERNEL_DIR" --quiet
+          # Push without --quiet so we see output; exit non-zero will fail the job (which is desired when push fails)
+          kaggle kernels push -p "$KERNEL_DIR"
