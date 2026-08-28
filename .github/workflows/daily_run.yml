@@ -2,7 +2,7 @@ name: Trigger Kaggle Notebook Daily
 
 on:
   schedule:
-    - cron: '30 2 * * *'   # Runs daily at 02:30 UTC (08:00 IST)
+    - cron: '7 1 * * *'   # Runs daily at 01:07 UTC (06:37 IST)
   workflow_dispatch:
 
 jobs:
